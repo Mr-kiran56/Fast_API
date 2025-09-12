@@ -1,7 +1,13 @@
 from pydantic import BaseModel
-# from sqlalchemy import Column,INTEGER,Str
+
 class Blog(BaseModel):
-    id:int
-    name:str
-    age:int
- 
+    name: str
+    age: int
+
+class ShowBlog(Blog):
+    class Config:
+        from_attributes = True
+
+class User_Data(BaseModel):
+    email: str
+    password: str

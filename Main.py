@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 import uvicorn
-
+from typing import List
 from files import models
 from files import schema
 from database import engine, SessionMaker
@@ -26,13 +26,13 @@ def blog(request: schema.Blog, db: Session = Depends(get_db)):
     return new_blog
 
 
-@app.get("/getdata", status_code=status.HTTP_200_OK)
+@app.get("/getdata", status_code=status.HTTP_200_OK,response_model=List[schema.ShowBlog])
 def get_data(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all()
     return blogs
 
 
-@app.get("/getbyid/{id}", status_code=status.HTTP_200_OK)
+@app.get("/getbyid/{id}", status_code=status.HTTP_200_OK,response_model=schema.ShowBlog)
 def byid(id: int, db: Session = Depends(get_db)):
     data = db.query(models.Blog).filter(models.Blog.id == id).first()
     if not data:
@@ -73,6 +73,15 @@ def updatedata(id: int, request: schema.Blog, db: Session = Depends(get_db)):
     return {"message": f"Id {id} updated successfully!", "data": blog_data}
 
     
+
+
+@app.post("/user")
+def User_data(request: schema.User_Data,db:Depends=(get_data)):
+    user_data=models.User(email=request.email,password=request.password)
+    db.add(user_data)
+    db.commit()
+    db.refresh(user_data)
+    return user_data
 
 
 if __name__ == "__main__":
