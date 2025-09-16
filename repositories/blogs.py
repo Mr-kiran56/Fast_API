@@ -34,7 +34,7 @@ class Blog:
             )
         db.delete(blog)
         db.commit()
-        return {"message": f"Id {id} is deleted!"}
+        return {"message": f"Id {id} is deleted!!"}
     
     def Update_Blog(id,request:schema.BlogSchema,db:Session):
         blog_data = db.query(models.Blog).filter(models.Blog.id == id).first()
