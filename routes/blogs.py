@@ -3,64 +3,36 @@ from typing import List
 from sqlalchemy.orm import Session
 from files import schema,models
 from database import get_db
+from repositories import blogs
+from routes import oauth2
+router=APIRouter(
+    tags=['Blogs'],
+    prefix='/blogs'
+)
 
 
-router=APIRouter()
-
-
-@router.post("/newpost", status_code=status.HTTP_201_CREATED,tags=['blogs'])
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def blog(request: schema.BlogSchema, db: Session = Depends(get_db)):
-    new_blog = models.Blog(title=request.title, description=request.description,user_id=1)
-    db.add(new_blog)
-    db.commit()
-    db.refresh(new_blog)
-    return new_blog
+   return blogs.Blog.Create_Blog(request,db)
 
 
-@router.get("/getdata", status_code=status.HTTP_200_OK,response_model=List[schema.ShowBlog],tags=['blogs'])
-def get_data(db: Session = Depends(get_db)):
-    blogs = db.query(models.Blog).all()
-    return blogs
+@router.get("/", status_code=status.HTTP_200_OK,response_model=List[schema.ShowBlog])
+def get_data(db: Session = Depends(get_db),get_current_user:schema.User_Detail=Depends(oauth2.get_current_user)):
+   return blogs.Blog.Get_Blog(db)
 
 
-@router.get("/getbyid/{id}", status_code=status.HTTP_200_OK,response_model=schema.ShowBlog,tags=['blogs'])
+@router.get("/{id}", status_code=status.HTTP_200_OK,response_model=schema.ShowBlog)
 def byid(id: int, db: Session=Depends(get_db)):
-    data = db.query(models.Blog).filter(models.Blog.id == id).first()
-    if not data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"This {id} is not found"
-        )
-    return data
+    return blogs.Blog.Get_Blog_By_Id(id,db)
 
 
-@router.delete("/blogdelete/{id}", status_code=status.HTTP_200_OK,tags=['blogs'])
+@router.delete("/{id}", status_code=status.HTTP_200_OK)
 def deleted(id: int, db: Session = Depends(get_db)):
-    blog = db.query(models.Blog).filter(models.Blog.id == id).first()
-    if not blog:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"This {id} is not found in db"
-        )
-    db.delete(blog)
-    db.commit()
-    return {"message": f"Id {id} is deleted!"}
+    return blogs.Blog.Delete_Blog(id,db)
+    
 
-@router.put("/blogupdate/{id}", status_code=status.HTTP_200_OK,tags=['blogs'])
+@router.put("/{id}", status_code=status.HTTP_200_OK)
 def updatedata(id: int, request: schema.BlogSchema, db: Session = Depends(get_db)):
-    blog_data = db.query(models.Blog).filter(models.Blog.id == id).first()
-    
-    if not blog_data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"This {id} is not found in db"
-        )
-    
-    blog_data.name = request.name
-    blog_data.age = request.age
-    
-    db.commit()
-    db.refresh(blog_data)
-    return {"message": f"Id {id} updated successfully!", "data": blog_data}
-
+    return blogs.Blog.Update_Blog(id,request,db)
+   
     
