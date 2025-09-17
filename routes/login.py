@@ -17,7 +17,7 @@ def Login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
     # OAuth2PasswordRequestForm gives 'username'
     
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!!")
 
     if not Hash.hash_verify(request.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
